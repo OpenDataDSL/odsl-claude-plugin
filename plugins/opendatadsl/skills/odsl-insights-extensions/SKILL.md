@@ -7,7 +7,7 @@ description: Build OpenDataDSL insight reports and portal extensions, meaning in
 
 An **insight** is an interactive report page: a Mustache script of HTML, CSS and JavaScript that the platform renders and shows in the portal, reading data through a JavaScript data API as the signed-in user. An **extension** packages one or more such pages as portal screens (views), together with its insights, policies and a manifest, so it can be installed in other environments or tenants.
 
-Both use the same page style. Read `references/house-style.md` before writing any page, and start from `references/example-insight.mustache`, a complete working page.
+Both use the same page style. Read `references/house-style.md` before writing any page, and start from `references/example-insight.md`, a complete working page.
 
 ## First, decide what is being built
 
@@ -24,7 +24,7 @@ Ask if it is unclear. Also ask, or find out, **which data the page reads**: the 
 ## Workflow
 
 1. **Plan the page**: the filters in the header, the KPI cards, the tabs (Overview, the paged list, breakdowns, one tab specific to this data), and which requests feed each part (a paged `find` for the list, `ODSLaggregate` for KPIs and breakdowns).
-2. **Write the page** from `references/example-insight.mustache`, following `references/house-style.md`. For an extension, also write its `.style` and `.common` partials and every view page.
+2. **Write the page** from `references/example-insight.md`, following `references/house-style.md`. For an extension, also write its `.style` and `.common` partials and every view page.
 3. **Write the registration**: the `InsightReport()` for each insight, and for an extension the full `create-extension.odsl` (feature policy, data policies if needed, insights, extension, views, resources). The manifest example in `references/building-extensions.md` is the template.
 4. **Check** every page with the list at the end of `references/house-style.md`. If the `validate_script` tool is available, run it on every page and script.
 5. **Save only when the user asks.** With the Fusion AI tools: `save_script` for pages (scriptType `mustache`), `create_report` for insight reports, and, where available, `create_policy` and `create_extension`. These change the user's tenant: confirm names, script paths and who can see it first. Otherwise hand over the files and the `create-extension.odsl` script for the user to run in VS Code with the OpenDataDSL extension.
@@ -62,8 +62,8 @@ Script paths in ODSL strings use single backslashes. Icons are Bootstrap icon na
 | File | Use it for |
 |---|---|
 | `references/house-style.md` | Includes, page structure, CSS classes, palette, the data API, paging, data-access rules, Mustache rules, email templates, checks. Read first. |
-| `references/example-insight.mustache` | A complete, tested insight page: filters, KPIs, pager, tabs, server-side sort and aggregation, CSV export |
-| `references/insight-report-style.css` | The shared CSS, for exact class names (include the partial; do not copy it) |
+| `references/example-insight.md` | A complete, tested insight page: filters, KPIs, pager, tabs, server-side sort and aggregation, CSV export |
+| `references/insight-report-style.md` | The shared CSS, for exact class names (include the partial; do not copy it) |
 | `references/building-extensions.md` | How extensions work, the manifest, views and menu groups, writing pages, insights and policies, publishing, the Fusion AI playbook, an HTML components example |
 | `references/insights.md` | Insight types, the item insight categories and the properties each screen passes, Excel insights, the older table and chart templates |
 | `references/reports.md` | Report configurations (Default, Fixed, Dynamic, Insight, Widget), schedules and the report services |

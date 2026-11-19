@@ -26,8 +26,8 @@ The first time Claude needs your data, the Fusion AI connector asks you to sign 
 ```
 .claude-plugin/marketplace.json            marketplace listing
 plugins/opendatadsl/
-  .claude-plugin/plugin.json               plugin manifest
-  .mcp.json                                Fusion AI MCP server
+  .claude-plugin/plugin.json               plugin manifest, including the Fusion AI MCP server
+  .claude-plugin/icon.png                  listing icon
   skills/odsl-scripting/
     SKILL.md                               workflow and language essentials
     references/practical-notes.md          hand-written: behaviours that break scripts
@@ -35,18 +35,13 @@ plugins/opendatadsl/
   skills/odsl-insights-extensions/
     SKILL.md                               what to build, workflow, key rules, naming
     references/house-style.md              hand-written: page structure, data API, Mustache rules
-    references/example-insight.mustache    hand-written, tested example page
-    references/insight-report-style.css    copy of the #insight-report-style partial
+    references/example-insight.md         hand-written, tested example page
+    references/insight-report-style.md    copy of the #insight-report-style partial
     references/*.md                        generated from the public documentation
-tools/build_refs.py                        regenerates the generated references
 ```
 
 ## Updating the references
 
-The generated reference files come from the documentation repository. After a documentation release:
+The generated reference files come from the documentation repository, which also holds the generator, `tools/build-claude-skill-refs.py` (see the comment at its top). Run it after a documentation release.
 
-```
-python3 tools/build_refs.py <path-to-documentation-repo>/docs plugins/opendatadsl/skills
-```
-
-The hand-written files (`practical-notes.md`, `house-style.md`, `example-insight.mustache`) are maintained by hand. `insight-report-style.css` is a copy of the platform's `#insight-report-style` partial: copy it again when the partial changes. Bump `version` in `plugin.json` and `marketplace.json` when you publish a change.
+The hand-written files (`practical-notes.md`, `house-style.md`, `example-insight.md`) are maintained by hand. `insight-report-style.md` is a copy of the platform's `#insight-report-style` partial: copy it again when the partial changes. Bump `version` in `plugin.json` and `marketplace.json` when you publish a change.

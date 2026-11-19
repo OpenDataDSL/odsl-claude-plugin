@@ -7,5 +7,19 @@
     "url": "https://www.opendatadsl.com"
   },
   "homepage": "https://doc.opendatadsl.com",
-  "keywords": ["opendatadsl", "odsl", "energy", "commodities", "market data"]
+  "keywords": [
+    "opendatadsl",
+    "odsl",
+    "energy",
+    "commodities",
+    "market data"
+  ],
+  "icon": ".claude-plugin/icon.png",
+  "privacyPolicyUrl": "https://www.opendatadsl.com/legal/Privacy-Policy",
+  "mcpServers": {
+    "odsl-fusion-ai": {
+      "type": "sse",
+      "url": "https://ai.api.opendatadsl.com/runtime/webhooks/mcp/sse"
+    }
+  }
 }

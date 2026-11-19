@@ -1,3 +1,10 @@
+# Example insight page
+
+A complete, tested insight page in the house style: automation runs for a date range, with filters, KPI cards and a pager at the top, tabs for an overview, the paged log and a breakdown, server-side sorting and aggregation, and CSV export of the full result.
+
+Save the content of the block below as a Mustache script (scriptType `mustache`), for example `insight-automation-runs`, and register it with `InsightReport()`.
+
+```html
 {{! Example insight in the house style: automation runs for a date range. Header with filters, KPI cards and pager at the top, tabs for an overview, the paged log and a breakdown, server-side sorting and aggregation, CSV export of the full result. }}{{> #odsl-portal }}
 {{> #insight-lib }}
 
@@ -241,3 +248,4 @@ async function exportCsv() {
 
 reloadAll();
 </script>
+```

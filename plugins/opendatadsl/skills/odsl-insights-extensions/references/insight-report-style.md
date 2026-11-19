@@ -1,3 +1,8 @@
+# The shared house style CSS
+
+A reference copy of the platform's `#insight-report-style` partial, for exact class names. Do not paste it into pages: include the partial and add only small overrides after it.
+
+```css
 /* The shared house style, included in pages with the #insight-report-style partial.
    Reference copy: do not paste it into pages. Include the partial and add only small overrides after it. */
 
@@ -276,3 +281,4 @@ tbody tr:nth-child(even) td { background: #f4f8fd; }
 @media (max-width: 1000px) {
   .spread-top, .flex-row { flex-direction: column; }
 }
+```

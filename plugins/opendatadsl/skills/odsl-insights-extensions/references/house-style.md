@@ -12,7 +12,7 @@ The OpenDataDSL portal's own insights and extensions follow this style. Pages th
 - `#odsl-portal`: icons and the portal theme.
 - `#insight-lib`: the data API plus `ReportProperties()` (the report's properties, such as `ID`, `DSID` and `ONDATE` for item insights) and `changeRangeHelper(range, includeTime, callback)` for preset date ranges.
 - `#odsl-service`: the data API for extension pages. Add `#odsl-signalr` for live updates.
-- `#insight-report-style`: the shared CSS (a reference copy is in `insight-report-style.css`). Never paste or redefine it; put small overrides in a `<style>` block after the include, with a one-line comment saying why.
+- `#insight-report-style`: the shared CSS (a reference copy is in `insight-report-style.md`). Never paste or redefine it; put small overrides in a `<style>` block after the include, with a one-line comment saying why.
 
 Partials whose names start with `#` are the platform's own. Your partials are included by their full script name.
 
