@@ -1565,7 +1565,7 @@ Options are given after the id as `name=value` pairs separated by commas. Use `;
 |bootstrap|The broker list, e.g. b-1:9196;b-2:9196 (required)||
 |group|The consumer group id (required)||
 |username|The SASL username||
-|password|The SASL password. Without it, the KAFKA_SASL_PASSWORD environment variable is used||
+|password|The SASL password. Without it, the password configured for the platform is used||
 |protocol|SASL_SSL, SSL, SASL_PLAINTEXT or PLAINTEXT|SASL_SSL|
 |mechanism|SCRAM-SHA-512, SCRAM-SHA-256 or PLAIN|SCRAM-SHA-512|
 |maxRecords|The most messages returned by one read|1000|
@@ -2086,7 +2086,7 @@ Printing a secret will only show stars, but you can use a secret value for a pas
 Example of using a secret for storing your ENTSOE security token:
 
 ```js
-url = "https://web-api.tp.entsoe.eu/api?securityToken=" + ${secret:"ENTSOE_TOKEN"}
+url = "https://web-api.tp.entsoe.eu/api?securityToken=" + ${secret:"YOUR_API_KEY"}
 ```
 
 ## Secrets in your own Azure Key Vault

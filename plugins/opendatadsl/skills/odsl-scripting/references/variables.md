@@ -3963,7 +3963,7 @@ save test
 
 ```js
 //#region Using a secret
-url = "https://web-api.tp.entsoe.eu/api?securityToken=" + ${secret:"ENTSOE_TOKEN"}
+url = "https://web-api.tp.entsoe.eu/api?securityToken=" + ${secret:"YOUR_API_KEY"}
 //#endregion
 ```
 

@@ -50,7 +50,7 @@ Every request runs as the signed-in user, so the platform's policies apply. All 
 | Function | Use |
 |---|---|
 | `find({service, source, filter, projection, sort, search, paging, queryParams})` | Lists. Prefer this: it sends `sort` to the server. |
-| `ODSLlist({service, source, filter, projection, paging, queryParams})` | Older list call. It does NOT send `sort`; pass `queryParams: {_sort: JSON.stringify({field: -1})}` if you use it. |
+| `ODSLlist({service, source, filter, projection, paging, queryParams})` | Older list call. It does NOT send `sort`; use `queryParams: {_sort: JSON.stringify({field: -1})}` if you use it. |
 | `ODSLGet({service, source, id, projection, range, params})` | One record |
 | `ODSLaggregate({service, source, pipeline})` | Server-side aggregation (no row limit) |
 | `ODSLUpdate({service, source, body, params})` | Save a record (POST of the whole object) |
@@ -60,7 +60,7 @@ Every request runs as the signed-in user, so the platform's policies apply. All 
 
 **`source`**: services that hold private and public data take `source: 'private'`, `'public'` or `'common'`. Single-source services take no `source`, for example `automation`, `automationlog`, `metric`, `policy`, `group`, `user`, `aiusage`.
 
-**Paging**: `const paging = new Paging(); paging.limit = 50;` then pass `paging` to `find`. After the call, `paging.items` is the total count (`-2` when the server did not count it), `paging.summary` is the "Results: 1-50 (120)" text, and `firstPage()`, `prevPage()`, `nextPage()`, `lastPage()` (each returns true when it moved), `hasPreviousPage()` and `hasNextPage()` drive the pager. Reset to the first page when a filter changes (`paging.page = 1; paging.skip = 0;`).
+**Paging**: `const paging = new Paging(); paging.limit = 50;` then give `paging` to `find`. After the call, `paging.items` is the total count (`-2` when the server did not count it), `paging.summary` is the "Results: 1-50 (120)" text, and `firstPage()`, `prevPage()`, `nextPage()`, `lastPage()` (each returns true when it moved), `hasPreviousPage()` and `hasNextPage()` drive the pager. Reset to the first page when a filter changes (`paging.page = 1; paging.skip = 0;`).
 
 **Rules that keep pages correct and fast:**
 
@@ -82,7 +82,7 @@ The platform renders every page with Mustache before the browser sees it.
 
 1. **Never write two opening braces in a row anywhere except a real Mustache tag**: not in an HTML comment, not in JavaScript, not in a JavaScript string. Mustache processes them wherever they are. Build such text from single characters (`'{' + '{'`).
 2. **Document a template with `{{! ... }}` comments**, never HTML comments containing tags (an include tag inside an HTML comment still includes the partial, and a partial that mentions its own include tag includes itself until it fails).
-3. **Pass report properties to JavaScript** with `ReportProperties()` (from `#insight-lib`), or in an extension page with `function viewProps() { return {{#json}}{{properties}}{{/json}}; }` written in the page itself.
+3. **Report properties in JavaScript**: use `ReportProperties()` (from `#insight-lib`), or in an extension page with `function viewProps() { return {{#json}}{{properties}}{{/json}}; }` written in the page itself.
 4. **Never nest a section inside itself** (`{{#items}}...{{#items}}`): inside the section the context falls back to the outer list and repeats it. Use one `{{#items}}...{{/items}}` and a sibling `{{^items}}...{{/items}}` for the empty case.
 5. **Keys that are data cannot be looped.** Mustache only reads fixed field names; reshape the data into a list of `{name, value}` objects first.
 6. **Server-rendered templates show integers as `8.0`.** In report and automation output templates, put counts and display values into the data as text, and branch on lists or booleans, not on a number being zero.
@@ -102,7 +102,7 @@ Emails (automation output, scheduled report digests) are a different medium:
 ## Checks before delivering a page
 
 - Keep the file ASCII (no curly quotes, dashes or other non-ASCII characters), as the portal's own pages are.
-- The `<script>` block passes a syntax check (`node --check` on the extracted script).
+- The `<script>` block has no syntax errors (`node --check` on the extracted script).
 - Every `getElementById("x")` has a matching `id="x"`.
 - `<style>` and `<script>` tags balance.
 - No two opening braces outside real Mustache tags.
