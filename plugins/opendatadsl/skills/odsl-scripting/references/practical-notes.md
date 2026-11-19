@@ -56,6 +56,13 @@ Check every script against this list before handing it over. Each item was confi
 - **Event ids:** `Event(date)` makes its id from the start time only, so several events at the same time overwrite each other. Set the id yourself: `e.id = "ID_" + format(d, "yyyyMMdd") + "_" + ref`.
 - **Saving events:** build them in a list on an object (`o = Object()`, `o.id = "MY.OBJECT"`, `o.TRADES = []`, `o.TRADES.add(e)`, `save o`).
 
+## Secrets
+
+- **Never put a key, token or password in a script.** Store it as a platform secret and read it in the script through the `secret` active variable service, written like any other service read: the service name `secret`, a colon and the secret's name in quotes. Use the secret's `.value` where the credential is needed, for example in a URL parameter or an `AccountKey` option.
+- **Printing a secret shows only stars**, so a script can log its steps safely.
+- **Ask the user for the secret's name, never its value.** They create secrets themselves in the portal or with the `Secret` variable type. Do not ask for, repeat or store a credential in the conversation.
+- Secret names may use `_` and `-`; in a company's own Azure Key Vault a `_` in the name is read as `-`.
+
 ## Processes and automations
 
 - **Process scripts have no `#ONDATE`.** Use `${date:"today"}`. Inputs arrive in `input`. The last value is the result: `"failed"` fails the run, `fail "message"` fails it with a message.

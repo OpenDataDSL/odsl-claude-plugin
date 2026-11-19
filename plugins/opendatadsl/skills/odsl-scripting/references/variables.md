@@ -3959,14 +3959,6 @@ save test
 //#endregion
 ```
 
-### Use a secret
-
-```js
-//#region Using a secret
-url = "https://web-api.tp.entsoe.eu/api?securityToken=" + ${secret:"YOUR_API_KEY"}
-//#endregion
-```
-
 ## More information
 * [Secret Service](https://doc.opendatadsl.com/docs/odsl/service/secret)
 

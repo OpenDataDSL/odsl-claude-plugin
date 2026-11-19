@@ -8,12 +8,12 @@ This repository is a Claude plugin marketplace. It holds one plugin, `opendatads
 
 ## Install
 
-**Claude Team or Enterprise (whole organisation).** An organisation owner adds this repository as a plugin marketplace in Organization settings, then chooses whether the `opendatadsl` plugin is installed by default or available for people to install.
+**Claude Team or Enterprise (whole organisation).** An organisation owner adds this repository (https://github.com/OpenDataDSL/odsl-claude-plugin) as a plugin marketplace in Organization settings, then chooses whether the `opendatadsl` plugin is installed by default or available for people to install.
 
 **Claude Code.**
 
 ```
-/plugin marketplace add <github-owner>/<this-repo>
+/plugin marketplace add OpenDataDSL/odsl-claude-plugin
 /plugin install opendatadsl@opendatadsl
 ```
 
