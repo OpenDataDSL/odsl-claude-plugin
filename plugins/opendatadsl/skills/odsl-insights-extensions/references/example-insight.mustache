@@ -1,0 +1,243 @@
+{{! Example insight in the house style: automation runs for a date range. Header with filters, KPI cards and pager at the top, tabs for an overview, the paged log and a breakdown, server-side sorting and aggregation, CSV export of the full result. }}{{> #odsl-portal }}
+{{> #insight-lib }}
+
+{{> #insight-report-style }}
+
+<div class="controls-container">
+  <h2>{{name}}</h2>
+  <p class="as-of">{{description}}</p>
+  <div class="controls">
+    <div class="controls-left">
+      <div class="filter-picker">
+        <label for="dateFrom">From</label>
+        <input id="dateFrom" type="date" onchange="reloadAll()">
+      </div>
+      <div class="filter-picker">
+        <label for="dateTo">To</label>
+        <input id="dateTo" type="date" onchange="reloadAll()">
+      </div>
+      <div class="filter-picker">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" onchange="reloadAll()">
+          <option value="">All</option>
+          <option value="failed">Failed only</option>
+        </select>
+      </div>
+      <span class="load-toggle" onclick="exportCsv()">Export (CSV)</span>
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <div class="kpi-cards">
+    <div class="kpi-card primary"><div class="kpi-label">Runs</div><div class="kpi-value" id="kpiRuns">-</div></div>
+    <div class="kpi-card negative"><div class="kpi-label">Failed</div><div class="kpi-value" id="kpiFailed">-</div></div>
+    <div class="kpi-card"><div class="kpi-label">Targets used</div><div class="kpi-value" id="kpiTargets">-</div></div>
+  </div>
+  <div class="pager-row">
+    <span class="pager-summary" id="pagerSummary"></span>
+    <button id="btnFirst" onclick="goPage('first')">First</button>
+    <button id="btnPrev" onclick="goPage('prev')">Prev</button>
+    <button id="btnNext" onclick="goPage('next')">Next</button>
+    <button id="btnLast" onclick="goPage('last')">Last</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+  <button class="tab-btn" data-tab="log" onclick="showTab('log')">Log</button>
+  <button class="tab-btn" data-tab="targets" onclick="showTab('targets')">By target</button>
+</div>
+
+<div id="tab-overview" class="tab-panel">
+  <div class="section">
+    <h3>Busiest targets</h3>
+    <table><thead><tr><th>Target</th><th class="num">Runs</th></tr></thead><tbody id="topTargets"></tbody></table>
+  </div>
+  <div class="section">
+    <h3>Most failures</h3>
+    <table><thead><tr><th>Automation</th><th class="num">Failed runs</th></tr></thead><tbody id="topFailures"></tbody></table>
+  </div>
+</div>
+
+<div id="tab-log" class="tab-panel" style="display:none;">
+  <div class="section">
+    <h3>Log</h3>
+    <div id="logNote" class="loading-note">Loading...</div>
+    <div class="scroll-table-wrap">
+      <table id="logTable">
+        <thead><tr><th>Time</th><th>Item</th><th>Action</th><th>Target</th><th>Status</th><th>Message</th></tr></thead>
+        <tbody id="logRows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="tab-targets" class="tab-panel" style="display:none;">
+  <div class="section">
+    <h3>Runs by target</h3>
+    <table><thead><tr><th>Target</th><th class="num">Runs</th><th class="num">Failed</th></tr></thead><tbody id="targetRows"></tbody></table>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const props = ReportProperties();
+const paging = new Paging();
+paging.limit = 50;
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text == null ? '' : String(text);
+  return div.innerHTML;
+}
+
+function isoDay(d) {
+  return d.toISOString().split('T')[0];
+}
+
+// Default range: the last 7 days
+(function initDates() {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - 7);
+  document.getElementById('dateFrom').value = isoDay(from);
+  document.getElementById('dateTo').value = isoDay(to);
+})();
+
+// Date strings in filters are turned into dates by the platform: use YYYY-MM-DDT00:00:00
+function buildFilter() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  const conditions = [];
+  if (from) conditions.push({ timestamp: { $gte: from + 'T00:00:00' } });
+  if (to) conditions.push({ timestamp: { $lte: to + 'T23:59:59' } });
+  if (document.getElementById('statusFilter').value === 'failed') {
+    conditions.push({ status: { $regex: 'fail', $options: 'i' } });
+  }
+  if (props.ID) conditions.push({ automation: props.ID });
+  return conditions.length ? { $and: conditions } : {};
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => { p.style.display = p.id === 'tab-' + name ? '' : 'none'; });
+}
+
+function showError(el, what, e) {
+  el.innerHTML = '<tr><td colspan="6" class="message-cell"><span class="badge neg">Error</span> ' +
+    escapeHtml(what + ' could not be loaded: ' + e) + '</td></tr>';
+}
+
+async function reloadAll() {
+  paging.page = 1;
+  paging.skip = 0;
+  await Promise.all([loadLog(), loadSummary()]);
+}
+
+// The paged list: sorted on the server, newest first
+async function loadLog() {
+  const body = document.getElementById('logRows');
+  const note = document.getElementById('logNote');
+  note.style.display = '';
+  note.textContent = 'Loading...';
+  try {
+    const rows = await find({
+      service: 'automationlog',
+      filter: buildFilter(),
+      projection: { timestamp: 1, key: 1, action: 1, target: 1, status: 1, message: 1 },
+      sort: { timestamp: -1 },
+      paging: paging
+    });
+    body.innerHTML = rows.map(r => '<tr><td>' + escapeHtml(r.timestamp) + '</td><td class="id">' + escapeHtml(r.key) +
+      '</td><td>' + escapeHtml(r.action) + '</td><td class="id">' + escapeHtml(r.target) + '</td><td>' +
+      statusBadge(r.status) + '</td><td class="message-cell">' + escapeHtml(r.message) + '</td></tr>').join('');
+    note.style.display = rows.length ? 'none' : '';
+    note.textContent = rows.length ? '' : 'No automation runs in this range.';
+    updatePager();
+  } catch (e) {
+    note.style.display = 'none';
+    showError(body, 'The log', e);
+  }
+}
+
+function statusBadge(status) {
+  const s = String(status || '').toLowerCase();
+  const cls = s.indexOf('fail') >= 0 || s.indexOf('error') >= 0 ? 'neg' : (s.indexOf('success') >= 0 || s.indexOf('complete') >= 0 ? 'pos' : 'watch');
+  return status ? '<span class="badge ' + cls + '">' + escapeHtml(status) + '</span>' : '';
+}
+
+function updatePager() {
+  document.getElementById('pagerSummary').textContent = paging.items > 0 ? paging.summary : '';
+  document.getElementById('btnFirst').disabled = !paging.hasPreviousPage();
+  document.getElementById('btnPrev').disabled = !paging.hasPreviousPage();
+  document.getElementById('btnNext').disabled = !paging.hasNextPage();
+  document.getElementById('btnLast').disabled = !paging.hasNextPage();
+}
+
+function goPage(which) {
+  const moved = which === 'first' ? paging.firstPage() : which === 'prev' ? paging.prevPage() :
+    which === 'next' ? paging.nextPage() : paging.lastPage();
+  if (moved) loadLog();
+}
+
+// KPIs and breakdowns: aggregated on the server with plain stages
+async function loadSummary() {
+  const match = { $match: buildFilter() };
+  try {
+    const byTarget = await ODSLaggregate({ service: 'automationlog', pipeline: [
+      match, { $group: { _id: '$target', runs: { $sum: 1 } } }, { $sort: { runs: -1 } }] });
+    const failedMatch = { $match: { $and: [buildFilter(), { status: { $regex: 'fail', $options: 'i' } }] } };
+    const failedByTarget = await ODSLaggregate({ service: 'automationlog', pipeline: [
+      failedMatch, { $group: { _id: '$target', failed: { $sum: 1 } } }] });
+    const failedByAutomation = await ODSLaggregate({ service: 'automationlog', pipeline: [
+      failedMatch, { $group: { _id: '$automation', failed: { $sum: 1 } } }, { $sort: { failed: -1 } }, { $limit: 5 }] });
+
+    const failedMap = {};
+    failedByTarget.forEach(r => { failedMap[r._id] = r.failed; });
+    const totalRuns = byTarget.reduce((n, r) => n + r.runs, 0);
+    const totalFailed = failedByTarget.reduce((n, r) => n + r.failed, 0);
+
+    document.getElementById('kpiRuns').textContent = totalRuns.toLocaleString();
+    document.getElementById('kpiFailed').textContent = totalFailed.toLocaleString();
+    document.getElementById('kpiTargets').textContent = byTarget.length.toLocaleString();
+
+    document.getElementById('topTargets').innerHTML = byTarget.slice(0, 5).map(r =>
+      '<tr><td class="id">' + escapeHtml(r._id) + '</td><td class="num">' + r.runs.toLocaleString() + '</td></tr>').join('');
+    document.getElementById('topFailures').innerHTML = failedByAutomation.map(r =>
+      '<tr><td class="id">' + escapeHtml(r._id) + '</td><td class="num">' + r.failed.toLocaleString() + '</td></tr>').join('') ||
+      '<tr><td colspan="2">No failures in this range.</td></tr>';
+    document.getElementById('targetRows').innerHTML = byTarget.map(r =>
+      '<tr><td class="id">' + escapeHtml(r._id) + '</td><td class="num">' + r.runs.toLocaleString() +
+      '</td><td class="num">' + (failedMap[r._id] || 0).toLocaleString() + '</td></tr>').join('');
+  } catch (e) {
+    showError(document.getElementById('topTargets'), 'The summary', e);
+  }
+}
+
+// CSV of the whole result, not just the current page
+async function exportCsv() {
+  try {
+    const rows = await find({ service: 'automationlog', filter: buildFilter(), sort: { timestamp: -1 },
+      projection: { timestamp: 1, key: 1, action: 1, target: 1, status: 1, message: 1 }, paging: UnlimitedPaging() });
+    const cols = ['timestamp', 'key', 'action', 'target', 'status', 'message'];
+    const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const csv = [cols.join(',')].concat(rows.map(r => cols.map(c => cell(r[c])).join(','))).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'automation-runs.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    const note = document.getElementById('logNote');
+    note.style.display = '';
+    note.textContent = 'The export failed: ' + e;
+  }
+}
+
+reloadAll();
+</script>

@@ -1,0 +1,20 @@
+{
+  "name": "opendatadsl",
+  "owner": {
+    "name": "OpenDataDSL",
+    "url": "https://www.opendatadsl.com"
+  },
+  "metadata": {
+    "description": "Claude plugins for the OpenDataDSL data management platform"
+  },
+  "plugins": [
+    {
+      "name": "opendatadsl",
+      "source": "./plugins/opendatadsl",
+      "description": "Work with the OpenDataDSL platform from Claude: write ODSL scripts, build insights and extensions, and connect to your tenant through Fusion AI.",
+      "version": "0.2.0",
+      "category": "data",
+      "keywords": ["opendatadsl", "odsl", "energy", "commodities", "market data", "forward curves"]
+    }
+  ]
+}
