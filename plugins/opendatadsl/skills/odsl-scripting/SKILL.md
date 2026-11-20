@@ -58,7 +58,7 @@ label = price > 100 ? "high" : "normal"   // only as a whole assignment
 
 ### Functions
 
-Return a value by assigning to the function's own name. Prefix your function names so they never clash with a built-in (a built-in with the same name silently wins).
+Return a value with `return value`, or by assigning to the function's own name. Prefix your function names so they never clash with a built-in (a built-in with the same name silently wins).
 
 ```js
 /**
@@ -104,7 +104,7 @@ print "message"
 fail "message"         // fail the run (processes and workflows)
 ```
 
-Keep `on error ignore` inside a small helper function that calls no other functions after it (see practical notes).
+`on error ignore` applies only in the function (or script) that runs it: a called function starts with `on error exit`, and its error is handled by the calling statement.
 
 ### Processes
 
@@ -134,6 +134,5 @@ Full documentation: https://doc.opendatadsl.com/docs/odsl
 
 - A `/** ... @category ... */` header saying what the script does.
 - Short, descriptive variable names; one idea per line, since conditions and concatenations cannot run over two lines.
-- Bracket arithmetic that mixes operators: `(a / b) * c`.
 - `log info` lines at the key steps of anything that runs unattended, so the process log shows what happened.
 - Tell the user what each placeholder id is and where to find the real one.

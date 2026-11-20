@@ -27,7 +27,13 @@ Ask if it is unclear. Also ask, or find out, **which data the page reads**: the 
 2. **Write the page** from `references/example-insight.md`, following `references/house-style.md`. For an extension, also write its `.style` and `.common` partials and every view page.
 3. **Write the registration**: the `InsightReport()` for each insight, and for an extension the full `create-extension.odsl` (feature policy, data policies if needed, insights, extension, views, resources). The manifest example in `references/building-extensions.md` is the template.
 4. **Check** every page with the list at the end of `references/house-style.md`. If the `validate_script` tool is available, run it on every page and script.
-5. **Save only when the user asks.** With the Fusion AI tools: `save_script` for pages (scriptType `mustache`), `create_report` for insight reports, and, where available, `create_policy` and `create_extension`. These change the user's tenant: confirm names, script paths and who can see it first. Otherwise hand over the files and the `create-extension.odsl` script for the user to run in VS Code with the OpenDataDSL extension.
+5. **Save only when the user asks.** These change the user's tenant: confirm names, script paths and who can see it first. With the Fusion AI tools, save in this order:
+   1. `create_policy`: the FeaturePolicy (`policyType` FeaturePolicy, `features` matching the views' `feature`, `members`), then any data Policy.
+   2. `save_script`: every partial and page (scriptType `mustache`), each validated first.
+   3. `create_report`: each insight report (`reportType` Insight, `category` = the extension id, `template`, `icon`, `hideList` true).
+   4. `create_extension` last: the views as `views_json` and `resources_json` listing every policy, script and insight saved above.
+
+   The extension is then in the portal menu for the people in its feature policy. These tools save to the user's current tenant and environment only: publishing to the public catalogue, or installing into another environment, still needs an ODSL script (see `references/building-extensions.md`). Also give the user the equivalent `create-extension.odsl` for source control. Without the Fusion AI tools, hand over the files and that script for the user to run in VS Code with the OpenDataDSL extension.
 
 Fusion AI in the portal also has a **Build an extension** playbook (`#extension-builder`) that plans, writes and saves a whole extension after an approval. Mention it when the user would rather do it in the portal.
 
@@ -64,6 +70,7 @@ Script paths in ODSL strings use single backslashes. Icons are Bootstrap icon na
 | `references/house-style.md` | Includes, page structure, CSS classes, palette, the data API, paging, data-access rules, Mustache rules, email templates, checks. Read first. |
 | `references/example-insight.md` | A complete, tested insight page: filters, KPIs, pager, tabs, server-side sort and aggregation, CSV export |
 | `references/insight-report-style.md` | The shared CSS, for exact class names (include the partial; do not copy it) |
+| Fusion AI `get_extension_reference` | The platform's own extension reference (topics overview, extensions, insights), including the exact inputs of the saving tools. Use it when the tool is available. |
 | `references/building-extensions.md` | How extensions work, the manifest, views and menu groups, writing pages, insights and policies, publishing, the Fusion AI playbook, an HTML components example |
 | `references/insights.md` | Insight types, the item insight categories and the properties each screen passes, Excel insights, the older table and chart templates |
 | `references/reports.md` | Report configurations (Default, Fixed, Dynamic, Insight, Widget), schedules and the report services |
